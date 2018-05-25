@@ -72,9 +72,10 @@ exports.fromB58String = function fromB58String (hash) {
  * Decode a hash from the given multihash.
  *
  * @param {Buffer} buf
+ * @param {Boolean} fixLength
  * @returns {{code: number, name: string, length: number, digest: Buffer}} result
  */
-exports.decode = function decode (buf) {
+exports.decode = function decode (buf, fixLength) {
   if (!(Buffer.isBuffer(buf))) {
     throw new Error('multihash must be a Buffer')
   }
@@ -96,7 +97,12 @@ exports.decode = function decode (buf) {
   buf = buf.slice(varint.decode.bytes)
 
   if (buf.length !== len) {
-    throw new Error(`multihash length inconsistent: 0x${buf.toString('hex')}`)
+    if (!fixLength || buf.length < len) {
+        throw new Error(`multihash length inconsistent: 0x${buf.toString('hex')}`)
+    }
+    else {
+      buf = buf.slice(0, len);
+    }
   }
 
   return {
